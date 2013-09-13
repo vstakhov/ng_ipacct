@@ -1,0 +1,192 @@
+.\" Copyright (c) 2003 - 2005 Roman V. Palagin <romanp@unshadow.net>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $Id: ipacctctl.8,v 1.15 2005/03/10 07:54:34 romanp Exp $
+.\"
+.Dd Mach 10, 2005
+.Dt ipacctctl 8
+.Os
+.Sh NAME
+.Nm ipacctctl
+.Nd "программа для управления netgraph узлами типа ng_ipacct"
+.Sh SYNOPSIS
+.Nm
+.Op Fl nio
+.Op Fl d Ar level
+.Ar nodename:prefixname
+.Ar command
+.Op Ar command arguments
+.Sh DESCRIPTION
+Программа
+.Nm
+предназначена для управления и получения статистики из
+.Xr netgraph 4
+узла
+.Ar nodename
+типа
+.Xr ng_ipacct 4 .
+По умолчанию команда
+.Ar command
+выполняется для хуков
+.Ar prefixname
+_in и
+.Ar prefixname
+_out, используемых для подсчёта соответственно входящего
+и исходящего IP трафика.
+.Pp
+Могут использоваться следующие ключи:
+.Bl -tag -width ".Fl d Ar level"
+.It Fl n
+Выводить IP адреса в виде unsigned int а не dot notation.
+Позволяет упростить импорт данных в SQL сервера (в частности, MySQL).
+.It Fl i
+Применять команду только к хуку 
+.Ar prefixname Ns Em _in .
+.It Fl o
+Применять команду только к хуку 
+.Ar prefixname Ns Em _out .
+.It Fl d Ar level
+Позволяет задать уровень отладки для
+.Xr netgraph 3 .
+.El
+.Pp
+.Nm
+реализует следующие команды:
+.Bl -tag -width Fl
+.It Ic checkpoint
+Переместить данные из активной базы в checkpoint базу.
+.It Ic clear
+Очистить checkpoint базу.
+.It Ic debug Ar level
+Установить уровень отладки для
+.Xr ng_ipacct 4 .
+Уровень отладки является глобальной переменной для всего узла и
+определяет типы отладочных сообщений выводимых в процессе работы.
+.It Ic show
+Вывести содержимое checkpoint базы.
+.It Ic stat Ar arg
+Вывести информацию о
+.Ar arg .
+Возможны следующие значения
+.Ar arg : 
+.Bl -tag -width 2n -offset indent
+.It Ic a
+Вывести информацию об активной базе.
+.It Ic c
+Вывести информацию о checkpoint базе.
+.It Ic h
+Вывести информацию о хуке.
+.It Ic v
+Вывести текущие версии
+.Nm ,
+модуля
+.Nm ng_ipacct
+и версии API.
+.El
+.It Ic threshold Ar nrecords
+Установить максимальное количество записей в хэш-таблице
+для данного хука. Этот параметр определяет количество kernel
+памяти, которое будет использоваться при сохранении статистики.
+.It Ic saveuid Ar on
+Включить режим сохранения эффективного uid процесса, к которому
+имеет отношение IP пакет. Необходимо учитывать, что не всегда
+возможно найти такой процесс - в этом случае в поле uid
+при выводе статистики будет стоять '-1'.
+.It Ic verbose Ar on
+Включить расширенный режим сохранения статистики - дополнительно
+к IP адресам, количеству пакетов и байт сохраняется номер IP протокола и
+порты для протоколов TCP/UDP/ICMP.
+.It Ic savetime Ar on
+Сохранять время когда был получен первый пакет, относящийся к
+данной записи.
+.It Ic dlt Ar type
+Установить для хука тип входящих пакетов в 
+.Ar type .
+Возможные значения
+.Ar type : 
+.Bl -tag -width 2n -offset indent
+.It Ic EN10MB
+Ethernet/FastEthernet/GigabitEthernet фреймы.
+.It Ic RAW
+IP пакеты.
+.It Ic NGGIF
+пакеты от 
+.Xr ng_ipacct 4 .
+.El
+По умолчанию при создании хука тип входящих пакетов полагается равным
+.Dv EN10MB .
+.El
+.Pp
+При использовании команды
+.Ic show
+выводится содержимое checkpoint базы данных в формате:
+.Pp
+ip_from ip_to packets bytes
+.Pp
+Этот формат аналогичен выводу команды IOS:
+.Pp
+show ip accounting
+.Pp
+В случае использования опции
+.Ic verbose
+статистика выводится в виде:
+.Pp
+ip_from s_port ip_to d_port proto packets bytes
+.Pp
+Если
+.Em proto
+- ICMP, то
+.Em s_port
+- ICMP type,
+.Em d_port
+- ICMP sub-code.
+.Pp
+При включённом режиме
+.Ic saveuid
+добавляется поле, содержащее euid процесса. При включённом
+режиме
+.Ic savetime
+добавляется поле, содержащее время в формате UNIX time.
+.Sh EXAMPLES
+Примеры использования
+.Nm
+приведены в каталоге scripts.
+.Sh DIAGNOSTICS
+Необходимо обращать внимание на сообщения вида
+.Em (port %d) accounting threshold exceeded for %d packet(s) and %d byte(s) .
+Они говорят о том, что указанное количество пакетов было принято,
+но не подсчитано из-за превышения количества записей в хэш-таблице. Возможные
+решения - чаще снимать статистику или увеличить количество записей в
+хэш-таблице с помощью команды
+.Ic threshold .
+Необходимо учитывать, что увеличивать threshold до бесконечности
+нельзя - может закончиться kernel memory и машина
+подвиснет/перезагрузится.
+.Sh SEE ALSO
+.Xr netgraph 4 ,
+.Xr ng_ipacct 4 .
+.Sh AUTHORS
+.An Roman V. Palagin Aq romanp@unshadow.net .
+.Sh BUGS
+Если вы нашли ошибки - пожалуйста, свяжитесь с автором.

@@ -1,0 +1,618 @@
+2006-12-23 12:56  romanp
+
+	* ipacctctl/ipacctctl.c: Use PRIu64 when printing 64-bit ints.
+
+	  Submited by: Sergey Skvortsov
+
+2006-12-05 23:46  romanp
+
+	* ng_ipacct/ng_ipacct.c: Fix accounting of short (<28 bytes) ICMP
+	  packets.
+
+	  Submited by: Anton Yuzhaninov
+
+2005-07-31 11:58  romanp
+
+	* ng_ipacct/Makefile: We don't need NOMAN in kernel module.
+
+2005-07-31 11:57  romanp
+
+	* ipacctctl/Makefile: Improve NOMAN/NO_MAN detection.
+
+2005-07-31 11:20  romanp
+
+	* ipacctctl/Makefile, ng_ipacct/Makefile, ng_ipacct/ng_ipacct.c:
+	  Set of patches for 6.0-R suport.
+
+	  Submitted by: Gleb Smirnoff <glebius at FreeBSD.org>
+
+2005-03-10 10:54  romanp
+
+	* ipacctctl/ipacctctl.c, man_ru/ipacctctl.8, ng_ipacct/ng_ipacct.c,
+	  ng_ipacct/ng_ipacct.h: Add support for packets from ng_gif:lower.
+
+2005-02-28 15:03  romanp
+
+	* ipacctctl/ipacctctl.c: Fix format warnings.
+
+2005-02-28 14:02  romanp
+
+	* ng_ipacct/ng_ipacct.c: Only printf() when VERBOSE defined.
+
+2005-02-28 14:02  romanp
+
+	* man_ru/ipacctctl.8: Fix typo.
+
+2005-01-18 15:53  romanp
+
+	* ng_ipacct/ng_ipacct.c: Add locking for hash addition.
+
+2005-01-12 18:41  romanp
+
+	* ipacctctl/ipacctctl.c: Fix initializers.
+
+2005-01-12 18:08  romanp
+
+	* ipacctctl/ipacctctl.c: Bring ip_account_read() back to life!
+	  Don't set netgraph control socket to non-blocking mode 'cause
+	  under heavy load we can receive EAGAIN in NgRecvMsg().  Introduce
+	  new switch - 'T', set read timeout in seconds.
+
+2004-12-13 15:30  romanp
+
+	* man_ru/ipacctctl.8: Fix format description for verbose output.
+
+	  Pointed out by: citrin at mail dot ru
+
+2004-12-02 10:21  romanp
+
+	* man_ru/ipacctctl.8: More patches from skv.
+
+2004-12-01 17:39  romanp
+
+	* man_ru/ipacctctl.8: Patches from skv at freebsd dot org
+
+2004-12-01 14:38  romanp
+
+	* ipacctctl/Makefile, man_ru/Makefile: Fix manpages build.
+
+2004-12-01 14:38  romanp
+
+	* man_ru/ipacctctl.8: Update manpage, add notes about possible
+	  kernel memory shortage.
+
+2004-12-01 14:16  romanp
+
+	* Makefile, ipacctctl/Makefile, man_ru/Makefile: Add russian
+	  manpage to build.
+
+2004-12-01 14:14  romanp
+
+	* man_ru/ipacctctl.8: Make repomove, koi8-r manpage must be in
+	  separate dir for proper installation.
+
+2004-11-29 14:19  romanp
+
+	* ng_ipacct/ng_ipacct.c: Move hash memory init/fini calls to module
+	  event handler.
+
+2004-11-27 23:40  romanp
+
+	* ng_ipacct/ng_ipacct_mem.h: Fix compilation for MEM_USE_MALLOC.
+
+2004-11-27 23:35  romanp
+
+	* ng_ipacct/ng_ipacct_hash.h: Disable hash debug messages.
+
+2004-11-27 23:34  romanp
+
+	* Makefile.inc: Comment out MEM_USE_ZONE by default.
+
+2004-11-27 23:31  romanp
+
+	* Makefile.inc, ipacctctl/ipacctctl.c, ng_ipacct/ng_ipacct.c,
+	  ng_ipacct/ng_ipacct.h, ng_ipacct/ng_ipacct_hash.h,
+	  ng_ipacct/ng_ipacct_mem.h: Now you can select memory allocation
+	  functions at compile time. Two options available - MEM_USE_MALLOC
+	  (use standart malloc/free sequence) and MEM_USE_ZONE (use zone
+	  allocator, cann't be used in FreeBSD 4.x for now). Zone allocator
+	  believed to be more efficient for small-sized memory allocations.
+
+2004-11-27 20:43  romanp
+
+	* scripts/: add_node.sh, rm_node.sh: Take iface name as parametr
+	  for add_node.sh/rm_node.sh scripts.
+
+2004-11-27 20:42  romanp
+
+	* ipacctctl/ipacctctl.c: Fix wrong initializer.
+
+2004-11-27 20:41  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h, ng_ipacct_hash.h: Make
+	  module compiles on FreeBSD 4.x and FreeBSD 5.3+.  Remove support
+	  for FreeBSd w/out M_ZERO option.  Reduce number of buckets to 256
+	  due to recent changes in memory allocation scheme.
+
+2004-08-10 11:52  romanp
+
+	* ipacctctl/ipacctctl.c, ng_ipacct/ng_ipacct.c,
+	  ng_ipacct/ng_ipacct.h, ng_ipacct/ng_ipacct_hash.h: Rework
+	  accounting hash. Now memory allocated by big chunks, not one
+	  MALLOC() for each accounting record. This should eliminate kernel
+	  lockups with big PPS values. Also rename some structures to be
+	  more informative.
+
+2004-04-15 10:34  romanp
+
+	* ipacctctl/ipacctctl.c, man_ru/ipacctctl.8, ng_ipacct/ng_ipacct.c,
+	  ng_ipacct/ng_ipacct.h: Merge changes from HEAD.
+
+2004-04-14 19:51  romanp
+
+	* ipacctctl/ipacctctl.c, ng_ipacct/ng_ipacct.c,
+	  scripts/add_node.sh, scripts/rm_node.sh: Port ng_ipacct to
+	  FreeBSD 5.x (at the time of writing it was 5.1-R)
+
+2004-01-09 12:14  romanp
+
+	* ipacctctl/ipacctctl.c: Fix ip_ctl_ctl() - only fl_use_in was
+	  checked, if you specify '-o' command will never be applied to
+	  output hook.
+
+	  Pointed out by: Eugene M. Zheganin
+
+2003-11-29 08:59  romanp
+
+	* ng_ipacct/ng_ipacct.c: Remove all VLAN-related code. It was
+	  useless anyway.
+
+2003-08-29 11:31  romanp
+
+	* man_ru/ipacctctl.8: New version of man page, more synced with
+	  real ipacctctl command.
+
+2003-08-13 12:44  romanp
+
+	* ng_ipacct/ng_ipacct.c: Fix PCB lookup. Sometimes we can found PCB
+	  with inc_lport port set to _foreign_ port, w/out IP addresses and
+	  with root credentials. I don't know why this PCB ever created,
+	  but we must skip it and try to find right one.
+
+2003-08-13 12:40  romanp
+
+	* ipacctctl/ipacctctl.c: Fix printing of UID as signed int, so
+	  packets w/out PCB will be printed with UID '-1'.
+
+2003-06-24 16:57  romanp
+
+	* ipacctctl/ipacctctl.c, ng_ipacct/ng_ipacct.c,
+	  ng_ipacct/ng_ipacct.h: Add API version checking via
+	  NGM_IPACCT_VINFO.  Add new argument for command 'stat' - 'v',
+	  which will output all versions (user level, kernel module, api)
+
+2003-06-24 12:04  romanp
+
+	* ipacctctl/ipacctctl.c: Add '-n' switch - output IP addresses as
+	  numbers which can be imported to MySQL w/out calling to
+	  INET_ATON()
+
+2003-06-23 21:15  romanp
+
+	* ipacctctl/ipacctctl.c: Reorganize code to simplify additions of
+	  new commands
+
+2003-02-14 12:30  romanp
+
+	* ng_ipacct/ng_ipacct.c: Fix a bug introduced in rev. 1.33: we
+	  never get port information for protocols due to improper check of
+	  error code returned by ip_account_chk_mbuf().  Remove unneeded
+	  ip_account_chk_mbuf() when processing DLT_IP packets.
+
+2002-10-02 23:41  romanp
+
+	* ng_ipacct/ng_ipacct.c, scripts/add_node.sh, scripts/rm_node.sh:
+	  Add support for 802.1Q frames so we can account traffic for VLANs
+	  on parent interface. Unfortunately it doesn't work as expected
+	  due to code path in VLAN output procedures - you can count only
+	  incoming traffic.  "Fix" m_pullup() usage.
+
+2002-07-31 11:53  romanp
+
+	* scripts/divert_node.sh: Nevermind :)
+
+2002-07-31 11:53  romanp
+
+	* TODO: Add one more task :)
+
+2002-05-28 20:02  romanp
+
+	* .gdbinit.ng_ipacct: Add gdb script for module debugging.
+
+2002-05-28 20:00  romanp
+
+	* TODO: Mark binary dump as 'DONE'
+
+2002-05-28 19:54  romanp
+
+	* ipacctctl/ipacctctl.c: Fix usage()
+
+2002-05-28 19:52  romanp
+
+	* ipacctctl/ipacctctl.c: Add support for binary dumps. -w file
+	  specifies file to write to, -r file specifies file to read from,
+	  -f flags allow to specify flags for format when read from file
+	  (see ng_ipacct.h for HI_XXX values), flags may be specified as
+	  bitmask of flags, i.e. -f 0x6 will print verbose stat with saved
+	  uids.
+
+2002-05-28 19:34  romanp
+
+	* ng_ipacct/ng_ipacct.h: Fix wrong calculation of NGRESP_SIZE which
+	  cause the kernel panic.  What was struct ip_acct_rec now is
+	  struct ip_acct_entry.
+
+2002-05-28 14:53  romanp
+
+	* scripts/add_node.sh: Sample usage of savetime
+
+2002-05-28 14:53  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h, ng_ipacct_hash.h: Introduce
+	  new SFLAGS/CFLAGS commands.  Remove VERBOSE, SAVEUID, SDEBUG Add
+	  HI_SAVE_TIME flag - now you can save time when first packet for
+	  record was saved.
+
+2002-05-28 14:53  romanp
+
+	* ipacctctl/ipacctctl.c: Introduce new SFLAGS/CFLAGS commands.
+	  Remove VERBOSE, SAVEUID, SDEBUG Add savetime {0|1} command - now
+	  you can save time when first packet for record was saved.
+
+2002-05-28 14:51  romanp
+
+	* TODO: Add TODO list
+
+2002-03-07 10:04  romanp
+
+	* ipacctctl/ipacctctl.c, man_ru/ipacctctl.8, ng_ipacct/ng_ipacct.c,
+	  ng_ipacct/ng_ipacct.h, scripts/add_node.sh, scripts/rm_node.sh:
+	  Change debug code. Now debug can be specified by bitmask. For
+	  list of valid values see ng_ipacct.h
+
+2002-03-01 11:26  romanp
+
+	* scripts/: add_node.sh, divert_node.sh: [no log message]
+
+2002-03-01 11:26  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h, ng_ipacct_hash.h: Big
+	  rewrite. Split most of hash-management code from accounting
+	  itself.  Remove some bcopy() calls Update copyright notes
+
+2002-03-01 11:22  romanp
+
+	* ipacctctl/ipacctctl.c: Bring in-sync with latest changes in
+	  ng_ipacct
+
+2002-02-28 12:01  romanp
+
+	* scripts/divert_node.sh: Fix script to use new dlt command
+
+2002-02-28 12:01  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h: Add new command - dlt. Now
+	  we can (and must) set DLT type via ipacctctl command, not via
+	  hook name. DLT type defaults to EN10MB for compatibility reasons.
+
+	  Remove uneeded nrec element.
+
+2002-02-28 11:44  romanp
+
+	* ipacctctl/ipacctctl.c, man_ru/ipacctctl.8: Add new command - dlt.
+	  Now we can (and must) set DLT type via ipacctctl command, not via
+	  hook name. DLT type defaults to EN10MB for compatibility reasons.
+
+2001-12-07 12:00  romanp
+
+	* ipacctctl/ipacctctl.c: Output format of show now depends on hook
+	  flags.
+
+2001-12-06 11:00  romanp
+
+	* scripts/add_node.sh: Fix ipacctctl call
+
+2001-12-06 10:59  romanp
+
+	* ng_ipacct/ng_ipacct.c: Lookup PCB via local ip:port only.
+
+2001-12-06 10:59  romanp
+
+	* ipacctctl/ipacctctl.c: Print uid as signed int, so packets w/out
+	  PCB prints with uid '-1'
+
+2001-12-04 14:47  romanp
+
+	* ng_ipacct/ng_ipacct.c: Fix long-standing bug in ip_acct_show()
+	  code.  Change error code to more descriptive in case of empty
+	  checkpointed database.
+
+2001-12-04 13:32  romanp
+
+	* ipacctctl/ipacctctl.c, ng_ipacct/ng_ipacct.c,
+	  ng_ipacct/ng_ipacct.h, scripts/add_node.sh: Implement new
+	  command, saveuid. When turned on ng_ipacct will try to save
+	  _effective_ uid of proccess to which packet is belong.
+
+2001-12-04 10:19  romanp
+
+	* man_ru/ipacctctl.8: Some small fixes in usage example
+
+2001-11-17 12:17  romanp
+
+	* ipacctctl/ipacctctl.c, ng_ipacct/ng_ipacct.c,
+	  ng_ipacct/ng_ipacct.h: Rewrite some structures using SLIST_XXX
+	  macros
+
+2001-11-17 11:16  romanp
+
+	* ipacctctl/ipacctctl.c, man_ru/ipacctctl.8, ng_ipacct/ng_ipacct.c:
+	  show command doesn't clear checkpointed database by default.
+	  some code cleanup
+
+2001-11-15 23:23  romanp
+
+	* man_ru/ipacctctl.8: draft version of new ipacctctl(8)
+
+2001-11-05 09:54  romanp
+
+	* ng_ipacct/ng_ipacct.c: Fix verbose mode assigmnent
+
+2001-11-05 09:54  romanp
+
+	* ChangeLog: Generate ChangeLog via cvs2cl script
+
+2001-10-25 19:08  romanp
+
+	* scripts/ng_ipacct_init.sh: Fix variables names
+
+2001-10-24 13:33  romanp
+
+	* ChangeLog: Start ChangeLog file!
+
+2001-10-24 13:29  romanp
+
+	* scripts/ng_ipacct_init.sh: - bring in-sync with latest changes in
+	  ipacctctl syntax
+
+2001-10-22 19:03  romanp
+
+	* ng_ipacct/ng_ipacct.c:  make ng_ipacct compiles without M_ZERO
+	  (some old 4.x versions)
+
+2001-10-21 13:25  romanp
+
+	* ng_ipacct/ng_ipacct.c, ng_ipacct/ng_ipacct.h,
+	  scripts/divert_node.sh: - add NGM_IPACCT_SDEBUG command - fix
+	  diver_node.sh
+
+2001-10-21 13:24  romanp
+
+	* ipacctctl/ipacctctl.c: - add 'debug' command - change command
+	  matching algorithm, now commands may be abrevated
+
+2001-10-21 11:58  romanp
+
+	* ng_ipacct/ng_ipacct.c, scripts/divert_node.sh,
+	  scripts/ng_ipacct_init.sh: - introduce new naming scheme. Now you
+	  must specifie both   node name and hook prefix. If hook prefix is
+	  not specified,   use node name as prefix.  - add code to process
+	  DLT_RAW frames - add sample script to use ng_ipacct in
+	  conjunction with ipfw
+
+2001-10-21 11:57  romanp
+
+	* ipacctctl/: Makefile, ipacctctl.c: - change MAN to MAN8 in
+	  Makefile - add -d switch (specify libnetgraph debug level) - fix
+	  usage() - introduce new naming scheme. Now you must specifie both
+	  node name and hook prefix. If hook prefix is not specified,
+	  use node name as prefix.
+
+2001-08-23 14:19  romanp
+
+	* scripts/: add_node.sh, ng_ipacct_init.sh: Change node name from
+	  iface_ip_account to iface_ip_acct. node name limited to 15 chars
+	  max, so we allow more lenghtly iface names.
+
+2001-08-23 14:19  romanp
+
+	* ipacctctl/ipacctctl.c: Change nopde name from iface_ip_account to
+	  iface_ip_acct. node name limited to 15 chars max, so we allow
+	  more lenghtly iface names.
+
+2001-08-16 17:14  romanp
+
+	* scripts/ng_ipacct_init.sh: Set default location of ipacctctl to
+	  /usr/local/sbin
+
+2001-08-16 17:13  romanp
+
+	* man_ru/ipacctctl.8: Fix some statements
+
+2001-08-16 17:07  romanp
+
+	* ipacctctl/: Makefile, ipacctctl.1: Make repocopy and change
+	  manpage from (1) to (8)
+
+2001-08-16 16:59  romanp
+
+	* ipacctctl/ipacctctl.1, man_ru/ipacctctl.8: Manual page for
+	  ipacctctl.
+
+	  Submitted by: Alexei Zakirov <frank@unshadow.net>
+
+2001-08-09 15:43  romanp
+
+	* ng_ipacct/ng_ipacct.c, ng_ipacct/ng_ipacct.h,
+	  scripts/ng_ipacct_init.sh: - add -k switch (don't clear
+	  checkpointed database after show) - add information when
+	  threshold was ever exceeded on hook - add rc.d-style startup
+	  script
+
+2001-08-09 15:42  romanp
+
+	* ipacctctl/ipacctctl.c: - add -k switch (don't clear checkpointed
+	  database after show) - add information when threshold was ever
+	  exceeded on hook
+
+2001-07-26 23:00  romanp
+
+	* ipacctctl/ipacctctl.c: Fix usage()
+
+2001-07-26 22:50  romanp
+
+	* ipacctctl/Makefile, ipacctctl/ipacctctl.c, ng_ipacct/ng_ipacct.c,
+	  ng_ipacct/ng_ipacct.h: - change type for number of bytes from
+	  u_int32_t to u_int64_t - fix some output formats.
+
+2001-06-28 01:53  romanp
+
+	* scripts/add_node.sh: Manualy load ng_xxx KLDs.
+
+2001-06-28 01:47  romanp
+
+	* ng_ipacct/ng_ipacct.c: Fix bug in curindex calculation in
+	  ip_account_show().
+
+2001-06-28 01:46  romanp
+
+	* ipacctctl/ipacctctl.c: Think about it as about empty commit :)
+
+2001-06-27 15:23  romanp
+
+	* ipacctctl/ipacctctl.c: Improve output formats for stat command
+
+2001-06-27 14:56  romanp
+
+	* ng_ipacct/ng_ipacct.c: hi.hi_records must be set to 0 in
+	  ip_account_checkpoint()
+
+2001-06-27 14:55  romanp
+
+	* ipacctctl/ipacctctl.c: Add output for current number of records
+	  in hook info.
+
+2001-06-27 14:51  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h: Change meaning of
+	  threeshold. Now it specifies maximum number of hash records per
+	  hook.
+
+2001-06-27 02:03  romanp
+
+	* ng_ipacct/ng_ipacct.c: Some cosmetic changes in hash functions
+
+2001-06-27 02:00  romanp
+
+	* ng_ipacct/ng_ipacct.c: Fix hash index calculation in case of
+	  non-verbose logging
+
+2001-06-27 01:50  romanp
+
+	* Makefile, ipacctctl/Makefile: Make repo-copy, add top-level
+	  makefile
+
+2001-06-27 01:35  romanp
+
+	* ng_ipacct/ng_ipacct.c: Fix ip_account_show(). Now you can safely
+	  inetrrupt SHOW command.
+
+2001-06-27 01:28  romanp
+
+	* ng_ipacct/ng_ipacct.c: Makes IP proto no sense in CISCO mode
+
+2001-06-27 01:25  romanp
+
+	* ipacctctl/ipacctctl.c: Add verbosity control
+
+2001-06-27 01:24  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h: Add verbose mode control.
+
+2001-06-27 00:38  romanp
+
+	* ipacctctl/ipacctctl.c: Fix bugs and typos from previous commit
+
+2001-06-27 00:37  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h: Implement new hashing
+	  scheme
+
+2001-06-26 20:37  romanp
+
+	* ng_ipacct/ng_ipacct.c: Zero checkpointed database stats in
+	  ip_account_clear()
+
+2001-06-26 20:10  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h: - use time_second instead
+	  of getmicrotime() - add NGM_IPACT_CLEAR command - fill ai.ai_last
+	  with last time packet arrives
+
+2001-06-26 20:02  romanp
+
+	* ipacctctl/ipacctctl.c: Implement command line interface.
+
+2001-06-26 16:06  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h: - fix active hash statistic
+	  calculation - fix ip_account_show()
+
+2001-06-26 15:21  romanp
+
+	* ng_ipacct/: Makefile, ng_ipacct.c: - fix panic caused by worng
+	  sized memmory allocation in ip_account_add() - remove unneeded
+	  splhigh()/splx() in ip_account_stop() - fix threshold detection
+
+2001-06-25 15:55  romanp
+
+	* ipacctctl/ipacctctl.c: Bring in-sync with latest changes in
+	  ng_ipacct.h
+
+2001-06-25 15:34  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h: Rewrite information
+	  structures
+
+2001-06-25 01:52  romanp
+
+	* ipacctctl/: Makefile, ipacctctl.c: Control utility for ng_ipacct
+	  netgraph node
+
+2001-06-25 01:52  romanp
+
+	* ipacctctl/: Makefile, ipacctctl.c: Initial revision
+
+2001-06-22 19:39  romanp
+
+	* scripts/add_node.sh: Sample setup script
+
+2001-06-22 18:57  romanp
+
+	* ng_ipacct/: ng_ipacct.c, ng_ipacct.h: Fix code after last
+	  "merge".
+
+2001-06-22 15:51  romanp
+
+	* ng_ipacct/ng_ipacct.c, ng_ipacct/ng_ipacct.h, scripts/rm_node.sh:
+	  Fix some stupid commit errors...
+
+2001-01-15 15:23  romanp
+
+	* ng_ipacct/: Makefile, ng_ipacct.c, ng_ipacct.h: Fresh import of
+	  IP accounting NETGRAPH node type
+
+2001-01-15 15:23  romanp
+
+	* ng_ipacct/: Makefile, ng_ipacct.c, ng_ipacct.h: Initial revision
+

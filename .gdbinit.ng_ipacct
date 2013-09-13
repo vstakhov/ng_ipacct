@@ -1,0 +1,16 @@
+dir path_to_ng_ipacct_source
+dir /usr/src/sys/i386/conf
+dir /usr/src/sys
+define asf
+   set $file = linker_files.tqh_first
+   set $found = 0
+   while ($found == 0)
+     if ($file->filename[3] == 'i')
+	set $found = 1
+     else
+       set $file = $file->link.tqe_next
+     end
+   end
+   shell /usr/bin/objdump --section-headers /modules/ng_ipacct.ko | grep ' .text' | awk '{print "add-symbol-file /modules/ng_ipacct.ko \$file->address+0x" $4}' > .asf
+   source .asf
+end

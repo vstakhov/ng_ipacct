@@ -1,0 +1,7 @@
+- возможность задавать выходной формат (Sergey Veltistov <phisto@gubkin.ru>)
+(DONE) - timestamp a-la ipacctd (Eugeny Krasilnikov <kras@izhcom.ru>)
+(DONE) - бинарный вывод для ipacctctl (Andrew <andrew@gcom.ru>)
+- выделить функции по работе с ng_ipacct.ko в отдельную библиотеку
+  (Pavel Shirshov <pavelsh@mail.ru>)
+
+($Header: /a/ncvs/romanp/ng_ipacct/TODO,v 1.3 2002/07/31 07:53:25 romanp Exp $)
