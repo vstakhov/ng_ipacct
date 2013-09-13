@@ -53,6 +53,10 @@ static const char rcs_id[] =
 
 #include "../ng_ipacct/ng_ipacct.h"
 
+#ifndef NG_PATHLEN
+#define NG_PATHLEN (NG_PATHSIZ - 1)
+#endif
+
 #define	TIME_FMT	"%Y/%m/%d %H:%M:%S" 	/* used in strftime() */
 #define	IN_HOOK		0
 #define OUT_HOOK	1
