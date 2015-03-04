@@ -27,7 +27,7 @@
  */
 
 static const char rcs_id[] =
-    "@(#) $Id: ng_ipacct.c,v 1.46 2006/12/05 20:46:04 romanp Exp $";
+"@(#) $Id: ng_ipacct.c,v 1.46 2006/12/05 20:46:04 romanp Exp $";
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -106,6 +106,7 @@ static struct ng_type ng_ipacct_typestruct = {
 	.rcvdata = ng_ipacct_rcvdata,
 	.disconnect = ng_ipacct_disconnect,
 };
+
 #else
 static struct ng_type ng_ipacct_typestruct = {
 	NG_VERSION,
@@ -122,6 +123,7 @@ static struct ng_type ng_ipacct_typestruct = {
 	ng_ipacct_disconnect,
 	NULL
 };
+
 #endif
 
 NETGRAPH_INIT(ipacct, &ng_ipacct_typestruct);
@@ -131,16 +133,15 @@ struct ip_acct_hash;
 
 /*
  * Notes about locking: under FreeBSD 5.x there are can
- * be multiply calls to recvdata() from same node. So we 
+ * be multiply calls to recvdata() from same node. So we
  * must protect additions to active hash. No other call
  * can occure simultaneosly.
  *
  * XXX Is it true?
  */
-struct ipacct_hook
-{
-	hook_p  hook;
-	node_p  node;
+struct ipacct_hook {
+	hook_p	hook;
+	node_p	node;
 	struct ip_acct_hash *active;	/* active database */
 	struct ip_acct_hash *checked;	/* checkpointed database */
 	struct ng_ipacct_hinfo hi;	/* hook info */
@@ -165,7 +166,8 @@ static int ip_account_chk_mbuf(struct mbuf **, int);
 
 /* XXX should be somewhere in ng_ipacct_hash.c */
 static uid_t pcb_get_cred(struct ip_acct_stream *r, struct inpcbinfo *pcbinfo);
-static int ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
+static int 
+ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
     struct ip_acct_stream *r);
 static struct ip_acct_chunk *ip_hash_getnext(struct ip_acct_hash *h);
 
@@ -204,10 +206,10 @@ ng_ipacct_constructor(node_p * nodep)
 #endif
 {
 #if __FreeBSD_version < 503000
-	int     error = 0;
+	int error = 0;
 
 	/*
-	 * Call the 'generic' (ie, superclass) node constructor 
+	 * Call the 'generic' (ie, superclass) node constructor
 	 */
 	if ((error = ng_make_node_common(&ng_ipacct_typestruct, nodep)))
 		return (error);
@@ -222,14 +224,14 @@ static int
 ng_ipacct_newhook(node_p node, hook_p hook, const char *name)
 {
 	hinfo_p hip;
-	int     error;
+	int error;
 
 	MALLOC(hip, hinfo_p, sizeof(*hip), M_NETGRAPH, M_NOWAIT | M_ZERO);
 	if (hip == NULL)
 		return (ENOMEM);
 
 	/*
-	 * allocate space for hash of accounting records 
+	 * allocate space for hash of accounting records
 	 */
 	if ((error = ip_hash_init(&hip->active)))
 		return (error);
@@ -239,7 +241,7 @@ ng_ipacct_newhook(node_p node, hook_p hook, const char *name)
 	hip->node = node;
 	hip->ai.ai_start = time_second;
 	/*
-	 *  set DLT to EN10MB (for compatibility reasons), can be changed 
+	 *  set DLT to EN10MB (for compatibility reasons), can be changed
 	 *  via ipacctctl <..> dlt DLT
 	 */
 	hip->hi.hi_dlt = DLT_EN10MB;
@@ -269,8 +271,8 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 #endif
 {
 	struct ng_mesg *resp = NULL;
-	int     error = 0;
-	hook_p  h;
+	int error = 0;
+	hook_p h;
 	hinfo_p hip;
 	struct ng_ipacct_mesg *msg1;
 
@@ -281,7 +283,7 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 #endif
 
 	/*
-	 * Deal with message according to cookie and command 
+	 * Deal with message according to cookie and command
 	 */
 	switch (msg->header.typecookie) {
 	case NGM_IPACCT_COOKIE:
@@ -292,7 +294,7 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 
 				NG_MKRESPONSE(resp, msg,
 				    sizeof(struct ng_ipacct_vinfo), M_NOWAIT);
-				vi = (struct ng_ipacct_vinfo *) resp->data;
+				vi = (struct ng_ipacct_vinfo *)resp->data;
 				vi->vi_api_version = NGM_IPACCT_APIVER;
 				strncpy(vi->vi_kernel_id, rcs_id,
 				    MAXKERNIDLEN);
@@ -306,12 +308,12 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 					ERROUT(error);
 				Dbg_print(DBG_GEN,
 				    ("NGM_IPACCT_HINFO message received for %s\n",
-					NG_HOOK_NAME(h)));
+				    NG_HOOK_NAME(h)));
 				NG_MKRESPONSE(resp, msg,
 				    sizeof(struct ng_ipacct_hinfo), M_NOWAIT);
 				if (!resp)
 					ERROUT(ENOMEM);
-				*(struct ng_ipacct_hinfo *) resp->data =
+				*(struct ng_ipacct_hinfo *)resp->data =
 				    hip->hi;
 
 				break;
@@ -325,17 +327,17 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 					ERROUT(error);
 				Dbg_print(DBG_GEN,
 				    ("NGM_IPACCT_A(C)INFO message received for %s\n",
-					NG_HOOK_NAME(h)));
+				    NG_HOOK_NAME(h)));
 				NG_MKRESPONSE(resp, msg,
 				    sizeof(struct ng_ipacct_ainfo), M_NOWAIT);
 				if (!resp)
 					ERROUT(ENOMEM);
 
 				if (msg->header.cmd == NGM_IPACCT_AINFO)
-					*(struct ng_ipacct_ainfo *) resp->
+					*(struct ng_ipacct_ainfo *)resp->
 					    data = hip->ai;
 				else
-					*(struct ng_ipacct_ainfo *) resp->
+					*(struct ng_ipacct_ainfo *)resp->
 					    data = hip->ci;
 
 				break;
@@ -348,13 +350,13 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 					ERROUT(error);
 				Dbg_print(DBG_GEN,
 				    ("NGM_IPACCT_STHRS message received for %s\n",
-					NG_HOOK_NAME(h)));
-				msg1 = (struct ng_ipacct_mesg *) (msg->data);
-				hip->hi.hi_threshold = *(int *) (msg1->data);
+				    NG_HOOK_NAME(h)));
+				msg1 = (struct ng_ipacct_mesg *)(msg->data);
+				hip->hi.hi_threshold = *(int *)(msg1->data);
 				hip->hi.hi_thrs_when = 0;
 				break;
 			}
-		case NGM_IPACCT_DLEVEL:	/* set debug level */
+		case NGM_IPACCT_DLEVEL:/* set debug level */
 			{
 				error =
 				    ng_ipacct_findhook(node, msg, &h, &hip);
@@ -362,15 +364,15 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 					ERROUT(error);
 				Dbg_print(DBG_GEN,
 				    ("NGM_IPACCT_DLEVEL message received for %s\n",
-					NG_HOOK_NAME(h)));
-				msg1 = (struct ng_ipacct_mesg *) (msg->data);
-				hip->hi.hi_debug = *(int *) (msg1->data);
+				    NG_HOOK_NAME(h)));
+				msg1 = (struct ng_ipacct_mesg *)(msg->data);
+				hip->hi.hi_debug = *(int *)(msg1->data);
 				break;
 			}
-		case NGM_IPACCT_SFLAGS:	/* set bits in hi_flags */
-		case NGM_IPACCT_CFLAGS:	/* clear bits in hi_flags */
+		case NGM_IPACCT_SFLAGS:/* set bits in hi_flags */
+		case NGM_IPACCT_CFLAGS:/* clear bits in hi_flags */
 			{
-				int     bits;
+				int bits;
 
 				error =
 				    ng_ipacct_findhook(node, msg, &h, &hip);
@@ -378,9 +380,9 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 					ERROUT(error);
 				Dbg_print(DBG_GEN,
 				    ("NGM_IPACCT_(S|C)FLAGS message received for %s\n",
-					NG_HOOK_NAME(h)));
-				msg1 = (struct ng_ipacct_mesg *) (msg->data);
-				bits = *(int *) (msg1->data);
+				    NG_HOOK_NAME(h)));
+				msg1 = (struct ng_ipacct_mesg *)(msg->data);
+				bits = *(int *)(msg1->data);
 				if (msg->header.cmd == NGM_IPACCT_SFLAGS)
 					hip->hi.hi_flags |= bits;
 				else
@@ -388,7 +390,7 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 
 				break;
 			}
-		case NGM_IPACCT_SETDLT:	/* set data-link type */
+		case NGM_IPACCT_SETDLT:/* set data-link type */
 			{
 				error =
 				    ng_ipacct_findhook(node, msg, &h, &hip);
@@ -396,9 +398,9 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 					ERROUT(error);
 				Dbg_print(DBG_GEN,
 				    ("NGM_IPACCT_SETDLT message received for %s\n",
-					NG_HOOK_NAME(h)));
-				msg1 = (struct ng_ipacct_mesg *) (msg->data);
-				hip->hi.hi_dlt = *(int *) (msg1->data);
+				    NG_HOOK_NAME(h)));
+				msg1 = (struct ng_ipacct_mesg *)(msg->data);
+				hip->hi.hi_dlt = *(int *)(msg1->data);
 
 				break;
 			}
@@ -410,7 +412,7 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 					ERROUT(error);
 				Dbg_print(DBG_GEN,
 				    ("NGM_IPACCT_CHECK message received for %s\n",
-					NG_HOOK_NAME(h)));
+				    NG_HOOK_NAME(h)));
 				error = ip_account_checkpoint(hip);
 
 				break;
@@ -423,15 +425,15 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 					ERROUT(error);
 				Dbg_print(DBG_GEN,
 				    ("NGM_IPACCT_CLEAR message received for %s\n",
-					NG_HOOK_NAME(h)));
+				    NG_HOOK_NAME(h)));
 				ip_hash_clear(&hip->checked);
 				bzero(&hip->ci, sizeof(hip->ci));
 
 
 				break;
 			}
-		case NGM_IPACCT_SHOW:	/* get accounting out of the kernel into the
-					 * userspace */
+		case NGM_IPACCT_SHOW:	/* get accounting out of the kernel
+					 * into the userspace */
 			{
 				error =
 				    ng_ipacct_findhook(node, msg, &h, &hip);
@@ -439,7 +441,7 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 					ERROUT(error);
 				Dbg_print(DBG_GEN,
 				    ("NGM_IPACCT_SHOW message received for %s\n",
-					NG_HOOK_NAME(h)));
+				    NG_HOOK_NAME(h)));
 				NG_MKRESPONSE(resp, msg,
 				    sizeof(struct ip_acct_chunk), M_NOWAIT);
 				if (!resp)
@@ -462,7 +464,7 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 	}
 
 	/*
-	 * Take care of synchronous response, if any 
+	 * Take care of synchronous response, if any
 	 */
 #if __FreeBSD_version >= 503000
 	NG_RESPOND_MSG(error, node, item, resp);
@@ -472,7 +474,7 @@ ng_ipacct_rcvmsg(node_p node, struct ng_mesg *msg,
 	else if (resp)
 		FREE(resp, M_NETGRAPH);
 #endif
-      done:
+done:
 
 	NG_FREE_MSG(msg);
 
@@ -488,7 +490,7 @@ ng_ipacct_rcvdata(hook_p hook, struct mbuf *m, meta_p meta)
 #endif
 {
 	const hinfo_p hip = NG_HOOK_PRIVATE(hook);
-	int     error = 0;
+	int error = 0;
 
 #if __FreeBSD_version >= 503000
 	struct mbuf *m;
@@ -503,24 +505,24 @@ ng_ipacct_rcvdata(hook_p hook, struct mbuf *m, meta_p meta)
 
 			Dbg_print(DBG_DLT,
 			    ("Ethernet frame, m_pkthdr.len = %d, m_len = %d\n",
-				m->m_pkthdr.len, m->m_len));
+			    m->m_pkthdr.len, m->m_len));
 			if ((error =
-				ip_account_chk_mbuf(&m,
-				    sizeof(struct ether_header))))
+			    ip_account_chk_mbuf(&m,
+			    sizeof(struct ether_header))))
 				break;
 
 			eh = mtod(m, struct ether_header *);
 
 			/*
-			 * make sure this is IP frame 
+			 * make sure this is IP frame
 			 */
 			NTOHS(eh->ether_type);
 			Dbg_print(DBG_DLT, ("Ethernet frame type = 0x%04x\n",
-				eh->ether_type));
+			    eh->ether_type));
 			switch (eh->ether_type) {
 			case ETHERTYPE_IP:
 				/*
-				 * skip ethernet header 
+				 * skip ethernet header
 				 */
 				m_adj(m, sizeof(struct ether_header));
 				break;
@@ -537,20 +539,20 @@ ng_ipacct_rcvdata(hook_p hook, struct mbuf *m, meta_p meta)
 
 			Dbg_print(DBG_DLT,
 			    ("ng_gif frame, m_pkthdr.len = %d, m_len = %d\n",
-				m->m_pkthdr.len, m->m_len));
+			    m->m_pkthdr.len, m->m_len));
 			if ((error =
-				ip_account_chk_mbuf(&m, sizeof(sa_family_t))))
+			    ip_account_chk_mbuf(&m, sizeof(sa_family_t))))
 				break;
 			af = *(mtod(m, sa_family_t *));
 
 			/*
-			 * make sure this is IP packet 
+			 * make sure this is IP packet
 			 */
 			Dbg_print(DBG_DLT, ("ng_gif frame AF = 0x%04x\n", af));
 			switch (af) {
 			case AF_INET:
 				/*
-				 * skip AF glue 
+				 * skip AF glue
 				 */
 				m_adj(m, sizeof(sa_family_t));
 				break;
@@ -565,7 +567,7 @@ ng_ipacct_rcvdata(hook_p hook, struct mbuf *m, meta_p meta)
 		{
 			Dbg_print(DBG_DLT,
 			    ("IP packet, m_pkthdr.len = %d, m_len = %d\n",
-				m->m_pkthdr.len, m->m_len));
+			    m->m_pkthdr.len, m->m_len));
 			break;
 		}
 	default:
@@ -579,7 +581,7 @@ ng_ipacct_rcvdata(hook_p hook, struct mbuf *m, meta_p meta)
 	if (!error) {
 		Dbg_print(DBG_DLT,
 		    ("IP packet, m_pkthdr.len = %d, m_len = %d\n",
-			m->m_pkthdr.len, m->m_len));
+		    m->m_pkthdr.len, m->m_len));
 		error = ip_account_add(hip, &m);
 	}
 #if __FreeBSD_version >= 503000
@@ -639,7 +641,6 @@ ng_ipacct_disconnect(hook_p hook)
 		ng_rmnode(hook->node);
 #endif
 	}
-
 	return (0);
 }
 
@@ -649,12 +650,12 @@ ng_ipacct_findhook(node_p node, struct ng_mesg *msg, hook_p * h, hinfo_p * hip)
 	struct ng_ipacct_mesg *msg1;
 
 	/*
-	 * Sanity check 
+	 * Sanity check
 	 */
 	if (msg->header.arglen == 0) {
 		return (EINVAL);
 	}
-	msg1 = (struct ng_ipacct_mesg *) msg->data;
+	msg1 = (struct ng_ipacct_mesg *)msg->data;
 	/*
 	 * Find hook.
 	 * XXX we need some way to check how long
@@ -666,7 +667,6 @@ ng_ipacct_findhook(node_p node, struct ng_mesg *msg, hook_p * h, hinfo_p * hip)
 	if ((*hip = NG_HOOK_PRIVATE(*h)) == NULL) {
 		return (ENOENT);	/* XXX */
 	}
-
 	return (0);
 }
 
@@ -675,7 +675,7 @@ ng_ipacct_findhook(node_p node, struct ng_mesg *msg, hook_p * h, hinfo_p * hip)
  ***********************************************************/
 
 /*
- * Add acounting record to active hash. m points to mbuf chain 
+ * Add acounting record to active hash. m points to mbuf chain
  * with link-layer header stripped.
  */
 static int
@@ -684,21 +684,19 @@ ip_account_add(hinfo_p hip, struct mbuf **m)
 
 	struct ip_acct_record *ipe;
 	struct ip_acct_stream r;
-	int     plen, error;
+	int plen, error;
 	u_int32_t slot;
 
 	if (hip->active == NULL) {
 		return (ENOMEM);
 	}
-
 	/*
-	 * Try to fill *rec 
+	 * Try to fill *rec
 	 */
 	bzero(&r, sizeof(r));
 	if ((error = ip_hash_make_rec(hip, m, &plen, &r))) {
 		return (error);
 	}
-
 	hip->hi.hi_packets++;
 	hip->hi.hi_bytes += plen;
 
@@ -716,7 +714,7 @@ ip_account_add(hinfo_p hip, struct mbuf **m)
 		ipe->packets++;
 	} else {
 		/*
-		 * Threshold was exceeded or some errors occured, increment 
+		 * Threshold was exceeded or some errors occured, increment
 		 * threshold counters.
 		 */
 		hip->ai.ai_th_packets++;
@@ -739,12 +737,12 @@ ip_account_add(hinfo_p hip, struct mbuf **m)
 static int
 ip_account_checkpoint(hinfo_p hip)
 {
-	time_t  ts;
+	time_t ts;
 
-	int     spl;
+	int spl;
 
 	/*
-	 * sanity checks 
+	 * sanity checks
 	 */
 	if (hip->active == NULL)
 		return (EINVAL);
@@ -783,11 +781,10 @@ ip_account_show(hinfo_p hip, struct ng_mesg *resp)
 	if (hip->checked == NULL) {
 		return (ENOENT);
 	}
-
 	if (hip->ci.ai_packets == 0)
 		return (0);
 
-	outpe = (struct ip_acct_chunk *) resp->data;
+	outpe = (struct ip_acct_chunk *)resp->data;
 	outpe->nrecs = 0;
 	pe = ip_hash_getnext(hip->checked);
 	if (pe != NULL)
@@ -800,11 +797,11 @@ static void
 ip_account_stop(hinfo_p hip)
 {
 	/*
-	 * clear checked database 
+	 * clear checked database
 	 */
 	ip_hash_clear(&hip->checked);
 	/*
-	 * clear active database 
+	 * clear active database
 	 */
 	hip->checked = hip->active;
 	hip->active = NULL;
@@ -815,12 +812,11 @@ static int
 ip_account_chk_mbuf(struct mbuf **m, int min_len)
 {
 	/*
-	 * Make sure packet large enough to contains min_len bytes 
+	 * Make sure packet large enough to contains min_len bytes
 	 */
 	if ((*m)->m_pkthdr.len < min_len) {
 		return (EINVAL);
 	}
-
 	if (((*m)->m_len < min_len) && ((*m = m_pullup(*m, min_len)) == NULL)) {
 		return (ENOBUFS);
 	}
@@ -832,7 +828,7 @@ ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
     struct ip_acct_stream *r)
 {
 	register struct ip *ip;
-	int     hlen, error;
+	int hlen, error;
 
 	ip = mtod(*m, struct ip *);
 
@@ -850,12 +846,11 @@ ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
 	if (hlen < sizeof(struct ip)) {	/* minimum header length */
 		return (EINVAL);
 	}
-
 	r->r_src = ip->ip_src;
 	r->r_dst = ip->ip_dst;
 
 	/*
-	 * save packet length 
+	 * save packet length
 	 */
 	NTOHS(ip->ip_len);
 	*plen = ip->ip_len;
@@ -863,25 +858,23 @@ ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
 	if (!(hip->hi.hi_flags & HI_VERBOSE_MODE)) {
 		return (0);
 	}
-
 	r->r_ip_p = ip->ip_p;
 
 	NTOHS(ip->ip_off);
 	/*
-	 * XXX NOTE: only first fragment of fragmented TCP, UDP and 
+	 * XXX NOTE: only first fragment of fragmented TCP, UDP and
 	 * ICMP packet will be recorded with proper s_port and d_port.
 	 * Folowing fragments will be recorded simply as IP packet with
-	 * ip_proto = ip->ip_p and s_port, d_port set to zero. 
-	 * I know, it looks like bug. But I don't want to re-implement 
+	 * ip_proto = ip->ip_p and s_port, d_port set to zero.
+	 * I know, it looks like bug. But I don't want to re-implement
 	 * ip packet assebmling here. Anyway, (in)famous trafd works this way -
 	 * and nobody complains yet :)
 	 */
 	if (ip->ip_off & IP_OFFMASK) {
 		return (0);
 	}
-
 	/*
-	 * skip IP header 
+	 * skip IP header
 	 */
 	m_adj(*m, hlen);
 
@@ -890,9 +883,9 @@ ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
 	switch (r->r_ip_p) {
 	case IPPROTO_TCP:
 		if ((error =
-			ip_account_chk_mbuf(m, sizeof(struct tcphdr))) != 0) {
+		    ip_account_chk_mbuf(m, sizeof(struct tcphdr))) != 0) {
 			/*
-			 * looks like truncated TCP packet 
+			 * looks like truncated TCP packet
 			 */
 			break;
 		}
@@ -902,9 +895,9 @@ ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
 		break;
 	case IPPROTO_UDP:
 		if ((error =
-			ip_account_chk_mbuf(m, sizeof(struct udphdr))) != 0) {
+		    ip_account_chk_mbuf(m, sizeof(struct udphdr))) != 0) {
 			/*
-			 * looks like truncated UDP packet 
+			 * looks like truncated UDP packet
 			 */
 			break;
 		}
@@ -918,11 +911,10 @@ ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
 
 			if ((error = ip_account_chk_mbuf(m, ICMP_MINLEN)) != 0) {
 				/*
-				 * looks like truncated ICMP packet 
+				 * looks like truncated ICMP packet
 				 */
 				break;
 			}
-
 			icmp = mtod(*m, struct icmp *);
 
 			r->r_ports =
@@ -946,14 +938,14 @@ ip_hash_getnext(struct ip_acct_hash *h)
 			curindex++;
 			if (curindex > (NBUCKETS - 1)) {
 				/*
-				 * no more data available, reset walkers 
+				 * no more data available, reset walkers
 				 */
 				curindex = -1;
 				curent = NULL;
 				return (NULL);
 			}
 			/*
-			 * start with next bucket 
+			 * start with next bucket
 			 */
 			curent = SLIST_FIRST(&(h[curindex].head));
 		} while (curent == NULL);
@@ -964,14 +956,14 @@ ip_hash_getnext(struct ip_acct_hash *h)
 	return (ipe);
 }
 
-static  uid_t
+static uid_t
 pcb_get_cred(struct ip_acct_stream *r, struct inpcbinfo *pcbinfo)
 {
 	struct inpcb *pcb = NULL;
 	struct in_addr ina;
 	u_short port;
-	int     i;
-	uid_t   res;
+	int i;
+	uid_t res;
 
 	INP_HASH_RLOCK(pcbinfo);
 	for (i = 0, ina = r->r_dst, port = r->r_dport; i < 2; i++) {

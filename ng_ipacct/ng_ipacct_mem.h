@@ -71,7 +71,7 @@ static uma_zone_t ip_acct_zone;
 
 #define HASH_MEMFINI()	uma_zdestroy(ip_acct_zone)
 
-#else /* use FreeBSD 4.x zone allocator */
+#else					/* use FreeBSD 4.x zone allocator */
 #include <vm/vm_zone.h>
 static vm_zone_t ip_acct_zone;
 
@@ -83,5 +83,5 @@ static vm_zone_t ip_acct_zone;
 #define HASH_FREE(ptr)	zfree(ip_acct_zone, ptr)
 
 #define HASH_MEMFINI()
-#endif /* __FreeBSD_version */
-#endif /* MEM_USE_XXX */
+#endif					/* __FreeBSD_version */
+#endif					/* MEM_USE_XXX */

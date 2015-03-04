@@ -36,8 +36,7 @@
 #define NG_IPACCT_HASH1(faddr)\
         ((faddr ^ (faddr >> 23) ^ (faddr >> 17)))
 
-struct ip_acct_hash
-{
+struct ip_acct_hash {
 	struct rmlock bl;
 	SLIST_HEAD (, ip_acct_chunk) head;
 };
@@ -47,7 +46,7 @@ struct ip_acct_hash
 static __inline int
 ip_hash_init(struct ip_acct_hash **h)
 {
-	int     i;
+	int i;
 	struct ip_acct_hash *ph;
 
 	MALLOC(*h, struct ip_acct_hash *,
@@ -68,15 +67,16 @@ ip_hash_init(struct ip_acct_hash **h)
 
 static __inline struct ip_acct_record *
 ip_hash_lookup_or_insert(struct ip_acct_hash *h, int slot,
-    struct ip_acct_stream *s, u_int32_t * nrecs, int ok_to_insert)
+    struct ip_acct_stream *s, u_int32_t *nrecs, int ok_to_insert)
 {
 	struct ip_acct_chunk *pe, *lastpe;
 	struct ip_acct_record *pr;
-	int     i;
+	int i;
 	struct rm_priotracker track;
 
 #ifdef HASH_DEBUG
-	int     nchunk = 0;
+	int nchunk = 0;
+
 #endif
 
 	pe = lastpe = NULL;
@@ -85,7 +85,7 @@ ip_hash_lookup_or_insert(struct ip_acct_hash *h, int slot,
 		lastpe = pe;
 		for (i = 0; i < pe->nrecs; i++) {
 			if (bcmp(s, &pe->recs[i].s,
-				sizeof(struct ip_acct_stream)) == 0) {
+			    sizeof(struct ip_acct_stream)) == 0) {
 				rm_runlock(&h[slot].bl, &track);
 				return (&pe->recs[i]);
 			}
@@ -100,21 +100,21 @@ ip_hash_lookup_or_insert(struct ip_acct_hash *h, int slot,
 		nchunk--;
 #endif
 	/*
-	 * stream is not in hash. Add it if we allowed to do so. 
+	 * stream is not in hash. Add it if we allowed to do so.
 	 */
 	if (ok_to_insert) {
 
 		rm_wlock(&h[slot].bl);
 		if (lastpe != NULL && SLIST_NEXT(lastpe, next) != NULL) {
 			/*
-			 * It has been changed, need to scan again 
+			 * It has been changed, need to scan again
 			 */
 			pe = lastpe;
 			while (pe != NULL) {
 				lastpe = pe;
 				for (i = 0; i < pe->nrecs; i++) {
 					if (bcmp(s, &pe->recs[i].s,
-						sizeof(struct ip_acct_stream))
+					    sizeof(struct ip_acct_stream))
 					    == 0) {
 						rm_wunlock(&h[slot].bl);
 						return (&pe->recs[i]);
@@ -125,7 +125,7 @@ ip_hash_lookup_or_insert(struct ip_acct_hash *h, int slot,
 		}
 		/*
 		 * This is first chunk in slot or no
-		 * more space left in current chunk ? 
+		 * more space left in current chunk ?
 		 */
 		if ((lastpe == NULL) || (lastpe->nrecs >= NRECS)) {
 #ifdef HASH_DEBUG
@@ -134,7 +134,7 @@ ip_hash_lookup_or_insert(struct ip_acct_hash *h, int slot,
 			    sizeof(*pe));
 #endif
 			/*
-			 * allocate new accounting chunk 
+			 * allocate new accounting chunk
 			 */
 			if ((pe = HASH_ALLOC()) == NULL) {
 				rm_wunlock(&h[slot].bl);
@@ -165,18 +165,18 @@ ip_hash_lookup_or_insert(struct ip_acct_hash *h, int slot,
 static __inline void
 ip_hash_clear(struct ip_acct_hash **h)
 {
-	int     i;
+	int i;
 	struct ip_acct_chunk *ipe, *nxt;
 	struct ip_acct_hash *ph = *h;
 
 	/*
-	 * sanity check 
+	 * sanity check
 	 */
 	if (*h == NULL)
 		return;
 
 	/*
-	 * walk down through *next and free all memory 
+	 * walk down through *next and free all memory
 	 */
 	for (i = 0; i < NBUCKETS; i++) {
 		rm_wlock(&ph[i].bl);
