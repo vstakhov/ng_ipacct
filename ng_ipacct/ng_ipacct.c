@@ -885,7 +885,9 @@ pcb_get_cred(struct ip_acct_stream *r, struct inpcbinfo *pcbinfo)
 	struct in_addr 	ina;
 	u_short		port;
 	int		i;
+	uid_t		res;
 
+	INP_HASH_RLOCK(pcbinfo);
 	for (i = 0, ina = r->r_dst, port = r->r_dport; i < 2; i++) {
 #if __FreeBSD_version >= 700110
 	    pcb = in_pcblookup_local(pcbinfo, ina, port, 1, NOCRED);
@@ -900,11 +902,12 @@ pcb_get_cred(struct ip_acct_stream *r, struct inpcbinfo *pcbinfo)
 	    port = r->r_sport;
 	    pcb = NULL;
 	}
+	res = -1;
 	if ((pcb != NULL) &&
 	    (pcb->inp_socket != NULL) &&
 	    (pcb->inp_socket->so_cred != NULL)) {
-		return (pcb->inp_socket->so_cred->cr_uid);
-	} else {
-		return (-1);
+		res = pcb->inp_socket->so_cred->cr_uid;
 	}
+	INP_HASH_RUNLOCK(pcbinfo);
+	return res;
 }
