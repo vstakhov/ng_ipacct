@@ -39,7 +39,7 @@
  */
 
 #if !defined(MME_USE_MALLOC) && !defined(MEM_USE_ZONE)
-# define MEM_USE_MALLOC
+#define MEM_USE_MALLOC
 #endif
 
 #ifdef MEM_USE_MALLOC
@@ -57,9 +57,9 @@ MALLOC_DEFINE(M_IPACCT, "IP Accounting", "IP accounting records");
 #define HASH_MEMFINI()
 
 #elif defined(MEM_USE_ZONE)
-# if __FreeBSD_version >= 500000
-#  include <vm/uma.h>
-static uma_zone_t	ip_acct_zone;
+#if __FreeBSD_version >= 500000
+#include <vm/uma.h>
+static uma_zone_t ip_acct_zone;
 
 #define	HASH_MEMINIT()	ip_acct_zone = uma_zcreate("IpAcct",	  \
 			sizeof(struct ip_acct_chunk), NULL, NULL, NULL, NULL, \
@@ -71,9 +71,9 @@ static uma_zone_t	ip_acct_zone;
 
 #define HASH_MEMFINI()	uma_zdestroy(ip_acct_zone)
 
-# else /* use FreeBSD 4.x zone allocator */
-#  include <vm/vm_zone.h>
-static vm_zone_t	ip_acct_zone;
+#else /* use FreeBSD 4.x zone allocator */
+#include <vm/vm_zone.h>
+static vm_zone_t ip_acct_zone;
 
 #define	HASH_MEMINIT()	ip_acct_zone = zinit("IpAcct", \
 			sizeof(struct ip_acct_chunk), 0, 0, 1)
@@ -83,5 +83,5 @@ static vm_zone_t	ip_acct_zone;
 #define HASH_FREE(ptr)	zfree(ip_acct_zone, ptr)
 
 #define HASH_MEMFINI()
-# endif /* __FreeBSD_version */
+#endif /* __FreeBSD_version */
 #endif /* MEM_USE_XXX */
