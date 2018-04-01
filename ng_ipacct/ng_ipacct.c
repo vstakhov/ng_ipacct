@@ -44,6 +44,7 @@ static const char rcs_id[] =
 #include <net/bpf.h>
 #include <net/ethernet.h>
 #include <net/route.h>
+#include <net/vnet.h>
 
 #include <netinet/in_systm.h>
 #include <netinet/in.h>
@@ -891,7 +892,7 @@ ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
 		}
 		r->r_ports = *(mtod(*m, u_int32_t *));
 		if (hip->hi.hi_flags & HI_SAVE_UID)
-			r->r_uid = pcb_get_cred(r, &tcbinfo);
+			r->r_uid = pcb_get_cred(r, &V_tcbinfo);
 		break;
 	case IPPROTO_UDP:
 		if ((error =
@@ -903,7 +904,7 @@ ip_hash_make_rec(hinfo_p hip, struct mbuf **m, int *plen,
 		}
 		r->r_ports = *(mtod(*m, u_int32_t *));
 		if (hip->hi.hi_flags & HI_SAVE_UID)
-			r->r_uid = pcb_get_cred(r, &udbinfo);
+			r->r_uid = pcb_get_cred(r, &V_udbinfo);
 		break;
 	case IPPROTO_ICMP:
 		{

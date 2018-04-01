@@ -5,14 +5,19 @@
 BINDIR?=	/usr/local/sbin
 
 PROG=		ipacctctl
-.if !exists(/usr/share/mk/bsd.compat.mk)
-# Pre NOFOO -> NO_FOO system
-NOMAN=		YES
+
+.if defined(OSVERSION)
+.if ${OSVERSION} > 1100100
+MK_MAN=			no
 .else
+NO_MAN=
+.endif
+.else
+MK_MAN=			no
 NO_MAN=		YES
 .endif
 
-COPTS+=		-g -Wall -Wformat
+CFLAGS+=	-g -Wall -Wformat
 LDADD+=		-lnetgraph
 
 .include <bsd.prog.mk>

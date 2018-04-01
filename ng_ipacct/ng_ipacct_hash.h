@@ -36,6 +36,12 @@
 #define NG_IPACCT_HASH1(faddr)\
         ((faddr ^ (faddr >> 23) ^ (faddr >> 17)))
 
+#ifndef	MALLOC
+#define	MALLOC(space, cast, size, type, flags) \
+	((space) = (cast)malloc((u_long)(size), (type), (flags)))
+#define	FREE(addr, type) free((addr), (type))
+#endif
+
 struct ip_acct_hash {
 	struct rmlock bl;
 	SLIST_HEAD (, ip_acct_chunk) head;
