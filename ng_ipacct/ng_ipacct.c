@@ -970,7 +970,8 @@ pcb_get_cred(struct ip_acct_stream *r, struct inpcbinfo *pcbinfo)
 	INP_INFO_RLOCK(pcbinfo);
 #else
 #if __FreeBSD_version >= 120000
-  NET_EPOCH_ENTER();
+  struct epoch_tracker et;
+  NET_EPOCH_ENTER(et);
 #else
 	INP_HASH_RLOCK(pcbinfo);
 #endif
@@ -997,7 +998,7 @@ pcb_get_cred(struct ip_acct_stream *r, struct inpcbinfo *pcbinfo)
 	INP_INFO_RUNLOCK(pcbinfo);
 #else
 #if __FreeBSD_version >= 120000
-  NET_EPOCH_EXIT();
+  NET_EPOCH_EXIT(et);
 #else
 	INP_HASH_RUNLOCK(pcbinfo);
 #endif
