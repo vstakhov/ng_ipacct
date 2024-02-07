@@ -14,7 +14,6 @@ NO_MAN=
 .endif
 .else
 MK_MAN=			no
-NO_MAN=		YES
 .endif
 
 CFLAGS+=	-g -Wall -Wformat
