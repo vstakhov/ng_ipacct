@@ -86,6 +86,10 @@ static const char rcs_id[] =
 #define NTOHS(a) (a) = ntohs((a))
 #endif
 
+#ifndef CURTHREAD_CRED
+#define	CURTHREAD_CRED    (curthread->td_ucred)
+#endif
+
 static ng_constructor_t ng_ipacct_constructor;
 static ng_rcvmsg_t ng_ipacct_rcvmsg;
 static ng_shutdown_t ng_ipacct_shutdown;
@@ -981,7 +985,7 @@ pcb_get_cred(struct ip_acct_stream *r, struct inpcbinfo *pcbinfo)
 #endif
 	for (i = 0, ina = r->r_dst, port = r->r_dport; i < 2; i++) {
 #if __FreeBSD_version >= 700110
-		pcb = in_pcblookup_local(pcbinfo, ina, port, 1, NOCRED);
+		pcb = in_pcblookup_local(pcbinfo, ina, port, 1, CURTHREAD_CRED);
 #else
 		pcb = in_pcblookup_local(pcbinfo, ina, port, 1);
 #endif
