@@ -46,6 +46,15 @@ static const char rcs_id[] =
 #include <net/route.h>
 #include <net/vnet.h>
 
+/*
+ * FreeBSD version check
+ */
+#if !defined(__FreeBSD_version) || \
+		((__FreeBSD_version >= 500000) && (__FreeBSD_version < 503000)) || \
+		((__FreeBSD_version < 440000))
+#error "Module not supported on this version of FreeBSD."
+#endif
+
 #include <netinet/in_systm.h>
 #include <netinet/in.h>
 #include <netinet/in_pcb.h>
@@ -57,20 +66,15 @@ static const char rcs_id[] =
 #include <netinet/udp.h>
 #include <netinet/udp_var.h>
 
+#if __FreeBSD_version >= 140000
+#include <netinet/in_pcb_var.h>
+#endif
+
 #include <netgraph/ng_message.h>
 #include <netgraph/ng_parse.h>
 #include <netgraph/netgraph.h>
 
 #include "ng_ipacct.h"
-
-/*
- * FreeBSD version check
- */
-#if !defined(__FreeBSD_version) || \
-		((__FreeBSD_version >= 500000) && (__FreeBSD_version < 503000)) || \
-		((__FreeBSD_version < 440000))
-#error "Module not supported on this version of FreeBSD."
-#endif
 
 #define ERROUT(x)	{ error = (x); goto done; }
 
