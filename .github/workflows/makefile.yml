@@ -19,5 +19,6 @@ jobs:
       with: 
         usesh: true
         run: |
+          (cd /usr && fetch http://ftp.freebsd.org/pub/FreeBSD/releases/amd64/14.0-RELEASE/src.txz && tar xf src.txz)
           make
           make install
