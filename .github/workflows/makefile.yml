@@ -1,0 +1,24 @@
+name: Makefile CI in FreeBSD VM
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test in FreeBSD d
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with: 
+        usesh: true
+        run: |
+          (cd /tmp && fetch http://ftp.freebsd.org/pub/FreeBSD/releases/amd64/14.0-RELEASE/src.txz && tar -C / -xf src.txz && rm -f src.txz)
+          make
+          make install
